@@ -11,7 +11,7 @@ if __name__ == '__main__':
     """
     symbol = 'NIFTY'
     db1 = sqlite_functions.create_db("C:\\Users\\admin\\projects\\optionChain\\" + symbol + "-"
-                        + datetime.today().strftime('%Y-%m-%d') + ".db")
+                        + datetime.today().strftime('%Y-%m-%d-%H%M') + ".db")
     sqlite_functions.create_table(db1, 'oi_chain', '''CREATE TABLE oi_chain (CALL_OI bigint,
                                           PUT_OI bigint,
                                           TotalChinCallOI integer,
@@ -27,13 +27,6 @@ if __name__ == '__main__':
         word_list = final_oi.split()
         output_dict = {}
         for i in range(0, len(word_list), 2):
-            # Check if the current word is the date or time
-            if word_list[i] == 'TimeStamp':
-                # If it is, get the time stamp
-                output_dict['TimeStamp'] = ' '.join(word_list[-1:])
-                break
-            else:
-                # Otherwise, add the current key-value pair to the dictionary
-                output_dict[word_list[i]] = word_list[i + 1]
+            output_dict[word_list[i]] = word_list[i + 1]
         sqlite_functions.sql_insert(db1, 'oi_chain', output_dict)
-        time.sleep(30)
+        time.sleep(25)  # NSE only publish data every 30 seconds
