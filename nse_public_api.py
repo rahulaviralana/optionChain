@@ -44,7 +44,7 @@ def get_data(symbol='NIFTY'):
         if response.status_code == 200:
             return response.json()
 
-    except (SystemExit, AssertionError, MemoryError, KeyboardInterrupt) as e:
+    except (SystemExit, AssertionError, MemoryError, KeyboardInterrupt, Exception) as e:
         print('There was an error fetching data connecting to TenableIO ', e)
         return e
 

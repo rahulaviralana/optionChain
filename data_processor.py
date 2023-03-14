@@ -9,43 +9,49 @@ def __convert_dataframe__(raw_json_data):
     This function will convert the supplied data to Pandas Data Frame
     :return: This
     """
-    global timestamp
-    timestamp = raw_json_data['records']['timestamp'].split(" ")[1]
-    rawdata = pd.DataFrame(raw_json_data)
-    rawop = pd.DataFrame(rawdata['filtered']['data']).fillna(0)
-    return rawop
+    try:
+        global timestamp
+        timestamp = raw_json_data['records']['timestamp'].split(" ")[1]
+        rawdata = pd.DataFrame(raw_json_data)
+        rawop = pd.DataFrame(rawdata['filtered']['data']).fillna(0)
+        return rawop
+    except Exception as e:
+        return e
 
 
 def __dataframe__(rawop):
-    data = []
-    for i in range(0, len(rawop)):
-        calloi = callcoi = cltp = callvol = putoi = putcoi = pltp = putvol = ulatp = 0
-        stp = rawop['strikePrice'][i]
-        if rawop['CE'][i] == 0:
-            calloi = callcoi = 0
-        else:
-            calloi = rawop['CE'][i]['openInterest']
-            callcoi = rawop['CE'][i]['changeinOpenInterest']
-            cltp = rawop['CE'][i]['lastPrice']
-            callvol = rawop['CE'][i]['totalTradedVolume']
-            ulatp = rawop['CE'][i]['underlyingValue']
+    try:
+        data = []
+        for i in range(0, len(rawop)):
+            calloi = callcoi = cltp = callvol = putoi = putcoi = pltp = putvol = ulatp = 0
+            stp = rawop['strikePrice'][i]
+            if rawop['CE'][i] == 0:
+                calloi = callcoi = 0
+            else:
+                calloi = rawop['CE'][i]['openInterest']
+                callcoi = rawop['CE'][i]['changeinOpenInterest']
+                cltp = rawop['CE'][i]['lastPrice']
+                callvol = rawop['CE'][i]['totalTradedVolume']
+                ulatp = rawop['CE'][i]['underlyingValue']
 
-        if rawop['PE'][i] == 0:
-            putoi = putcoi = 0
-        else:
-            putoi = rawop['PE'][i]['openInterest']
-            putcoi = rawop['PE'][i]['changeinOpenInterest']
-            pltp = rawop['PE'][i]['lastPrice']
-            putvol = rawop['PE'][i]['totalTradedVolume']
+            if rawop['PE'][i] == 0:
+                putoi = putcoi = 0
+            else:
+                putoi = rawop['PE'][i]['openInterest']
+                putcoi = rawop['PE'][i]['changeinOpenInterest']
+                pltp = rawop['PE'][i]['lastPrice']
+                putvol = rawop['PE'][i]['totalTradedVolume']
 
-        opdata = {'CALL_OI': calloi, 'CALL_CHNG_OI': callcoi, 'CALL_LTP': cltp, 'CALL_VOLUME': callvol,
-                  'STRIKE_PRICE': stp, 'CURRENT_SPOT_PRICE': ulatp, 'PUT_OI': putoi, 'PUT_CHNG_OI': putcoi,
-                  'PUT_LTP': pltp, 'PUT_VOLUME': putvol, }
+            opdata = {'CALL_OI': calloi, 'CALL_CHNG_OI': callcoi, 'CALL_LTP': cltp, 'CALL_VOLUME': callvol,
+                      'STRIKE_PRICE': stp, 'CURRENT_SPOT_PRICE': ulatp, 'PUT_OI': putoi, 'PUT_CHNG_OI': putcoi,
+                      'PUT_LTP': pltp, 'PUT_VOLUME': putvol, }
 
-        data.append(opdata)
+            data.append(opdata)
 
-    optionchain = pd.DataFrame(data)
-    return optionchain
+        optionchain = pd.DataFrame(data)
+        return optionchain
+    except Exception as e:
+        return e
 
 
 def __calculate_OI__(symbol='NIFTY'):
