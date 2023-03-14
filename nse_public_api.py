@@ -24,7 +24,7 @@ def set_cookie():
         request = sess.get(main_url, headers=headers, timeout=30)
         cookies = dict(request.cookies)
 
-    except AssertionError as e:
+    except (SystemExit, AssertionError, MemoryError, KeyboardInterrupt, Exception) as e:
         print('There was an error connecting to NSE India ', e)
         return e
 

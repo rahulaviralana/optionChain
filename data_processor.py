@@ -55,24 +55,27 @@ def __dataframe__(rawop):
 
 
 def __calculate_OI__(symbol='NIFTY'):
-    rawop = __convert_dataframe__(nse_public_api.get_data(symbol))
-    optionchain = __dataframe__(rawop)
-    # Compute Call OI
-    TotalCallOI = optionchain['CALL_OI'].sum()
-    # Compute Put OI
-    TotalPutOI = optionchain['PUT_OI'].sum()
-    # Compute Call Change OI
-    TotalCallChOI = optionchain['CALL_CHNG_OI'].sum()
-    # Compute Put OI
-    TotalPutChOI = optionchain['PUT_CHNG_OI'].sum()
-    # Compute Call Volume
-    TotalCallVol = optionchain['CALL_VOLUME'].sum()
-    # Compute Put Volume
-    TotalPutVol = optionchain['PUT_VOLUME'].sum()
-    # Compute Current Spot Price
-    Totalulatp = optionchain['CURRENT_SPOT_PRICE'].sum()
-    # Average Spot Price
-    avgc = len(optionchain['CURRENT_SPOT_PRICE'])
+    try:
+        rawop = __convert_dataframe__(nse_public_api.get_data(symbol))
+        optionchain = __dataframe__(rawop)
+        # Compute Call OI
+        TotalCallOI = optionchain['CALL_OI'].sum()
+        # Compute Put OI
+        TotalPutOI = optionchain['PUT_OI'].sum()
+        # Compute Call Change OI
+        TotalCallChOI = optionchain['CALL_CHNG_OI'].sum()
+        # Compute Put OI
+        TotalPutChOI = optionchain['PUT_CHNG_OI'].sum()
+        # Compute Call Volume
+        TotalCallVol = optionchain['CALL_VOLUME'].sum()
+        # Compute Put Volume
+        TotalPutVol = optionchain['PUT_VOLUME'].sum()
+        # Compute Current Spot Price
+        Totalulatp = optionchain['CURRENT_SPOT_PRICE'].sum()
+        # Average Spot Price
+        avgc = len(optionchain['CURRENT_SPOT_PRICE'])
+    except Exception as e:
+        return e
 
 
     # print(f'CALL_OI {TotalCallOI} PUT_OI {TotalPutOI} TotalChinCallOI {TotalCallChOI} '
