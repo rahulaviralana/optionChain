@@ -51,6 +51,7 @@ def __dataframe__(rawop):
         optionchain = pd.DataFrame(data)
         return optionchain
     except Exception as e:
+        print('There was an exception in __dataframe__ ' + str(e))
         return e
 
 
@@ -81,4 +82,5 @@ def __calculate_OI__(symbol='NIFTY'):
                 f'Call_Put_Ratio {TotalCallOI / TotalPutOI} TotalCallVol {TotalCallVol} TotalPutVol {TotalPutVol}'
                 f' SPOT_PRICE {Totalulatp / avgc} TimeStamp {timestamp}')
     except Exception as e:
+        print('There was an error in __calculate_OI__ ' + str(e))
         return e
