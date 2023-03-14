@@ -74,17 +74,11 @@ def __calculate_OI__(symbol='NIFTY'):
         Totalulatp = optionchain['CURRENT_SPOT_PRICE'].sum()
         # Average Spot Price
         avgc = len(optionchain['CURRENT_SPOT_PRICE'])
+        
+        return (
+                f'CALL_OI {TotalCallOI} PUT_OI {TotalPutOI} TotalChinCallOI {TotalCallChOI} '
+                f'TotalChinPutOI {TotalPutChOI} oi_difference {TotalCallOI - TotalPutOI} '
+                f'Call_Put_Ratio {TotalCallOI / TotalPutOI} TotalCallVol {TotalCallVol} TotalPutVol {TotalPutVol}'
+                f' SPOT_PRICE {Totalulatp / avgc} TimeStamp {timestamp}')
     except Exception as e:
         return e
-
-
-    # print(f'CALL_OI {TotalCallOI} PUT_OI {TotalPutOI} TotalChinCallOI {TotalCallChOI} '
-    #     f'TotalChinPutOI {TotalPutChOI} oi_difference {TotalCallOI - TotalPutOI} '
-    #     f'Call_Put_Ratio {TotalCallOI / TotalPutOI} TotalCallVol {TotalCallVol} TotalPutVol {TotalPutVol}'
-    #     f' SPOT_PRICE {Totalulatp / avgc} TimeStamp {timestamp}')
-
-    return (
-            f'CALL_OI {TotalCallOI} PUT_OI {TotalPutOI} TotalChinCallOI {TotalCallChOI} '
-            f'TotalChinPutOI {TotalPutChOI} oi_difference {TotalCallOI - TotalPutOI} '
-            f'Call_Put_Ratio {TotalCallOI / TotalPutOI} TotalCallVol {TotalCallVol} TotalPutVol {TotalPutVol}'
-            f' SPOT_PRICE {Totalulatp / avgc} TimeStamp {timestamp}')
