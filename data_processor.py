@@ -11,7 +11,7 @@ def __convert_dataframe__(raw_json_data):
     """
     try:
         global timestamp
-        timestamp = raw_json_data['records']['timestamp'].split(" ")[1]
+        timestamp = raw_json_data['records']['timestamp']
         rawdata = pd.DataFrame(raw_json_data)
         rawop = pd.DataFrame(rawdata['filtered']['data']).fillna(0)
         return rawop
