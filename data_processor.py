@@ -50,8 +50,8 @@ def __dataframe__(rawop):
 
         optionchain = pd.DataFrame(data)
         return optionchain
-    except Exception as e:
-        print('There was an exception in __dataframe__ ' + str(e))
+    except (SystemExit, AssertionError, KeyError, MemoryError, KeyboardInterrupt, Exception) as e:
+        print('There was an exception in __dataframe__ ')
         return e
 
 
@@ -75,12 +75,17 @@ def __calculate_OI__(symbol='NIFTY'):
         Totalulatp = optionchain['CURRENT_SPOT_PRICE'].sum()
         # Average Spot Price
         avgc = len(optionchain['CURRENT_SPOT_PRICE'])
-        
+        # Call Put ratio
+        if TotalPutOI:
+            call_put_ratio = TotalCallOI / TotalPutOI
+        else:
+            call_put_ratio = 0
+
         return (
                 f'CALL_OI {TotalCallOI} PUT_OI {TotalPutOI} TotalChinCallOI {TotalCallChOI} '
                 f'TotalChinPutOI {TotalPutChOI} oi_difference {TotalCallOI - TotalPutOI} '
-                f'Call_Put_Ratio {TotalCallOI / TotalPutOI} TotalCallVol {TotalCallVol} TotalPutVol {TotalPutVol}'
+                f'Call_Put_Ratio {call_put_ratio} TotalCallVol {TotalCallVol} TotalPutVol {TotalPutVol}'
                 f' SPOT_PRICE {Totalulatp / avgc} TimeStamp {timestamp}')
-    except Exception as e:
-        print('There was an error in __calculate_OI__ ' + str(e))
+    except (SystemExit, AssertionError, KeyError, MemoryError, KeyboardInterrupt, TypeError, Exception) as e:
+        print('There was an error in __calculate_OI__ ')
         return e
