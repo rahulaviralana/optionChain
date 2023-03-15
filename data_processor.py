@@ -53,6 +53,8 @@ def __dataframe__(rawop):
     except (SystemExit, AssertionError, KeyError, MemoryError, KeyboardInterrupt, Exception) as e:
         print('There was an exception in __dataframe__ ')
         return e
+    except:
+        return
 
 
 def __calculate_OI__(symbol='NIFTY'):
