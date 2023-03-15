@@ -31,13 +31,18 @@ if __name__ == '__main__':
                                               TotalCallVol integer,
                                               TotalPutVol integer,
                                               SPOT_PRICE real,
-                                              TimeStamp text)''', drop_first=True)
+                                              TimeStamp datetime)''', drop_first=True)
         while True:
             final_oi = data_processor.__calculate_OI__(symbol)
             word_list = final_oi.split()
             output_dict = {}
             for i in range(0, len(word_list), 2):
-                output_dict[word_list[i]] = word_list[i + 1]
+                if word_list[i] == 'TimeStamp':
+                    # If it is, get the time stamp
+                    output_dict['TimeStamp'] = ' '.join(word_list[-2:])
+                    break
+                else:
+                    output_dict[word_list[i]] = word_list[i + 1]
             sqlite_functions.sql_insert(db1, 'oi_chain', output_dict)
             time.sleep(25)  # NSE only publish data every 30 seconds
 
