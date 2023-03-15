@@ -51,3 +51,45 @@ def sql_insert(con, table, data):
         con.commit()
     except Error:
         print(Error)
+
+
+def option_chain_cleanup_dups(filename):
+    """
+    This function removes all the duplicate rows
+    :param filename: Pass the full filename with absolute path
+    :return:
+    """
+    # Connect to the database
+    conn = sqlite3.connect(filename)
+
+    # Create a cursor object to execute SQL statements
+    cur = conn.cursor()
+
+    # Execute the SQL statements to create a temp table with unique rows only
+    cur.execute("""
+        CREATE TEMPORARY TABLE oi_chain_temp AS
+        SELECT CALL_OI, PUT_OI, TotalChinCallOI, TotalChinPutOI, oi_difference, Call_Put_Ratio, TotalCallVol,
+         TotalPutVol, SPOT_PRICE, TimeStamp
+        FROM oi_chain
+        GROUP BY CALL_OI, PUT_OI, TotalChinCallOI, TotalChinPutOI, SPOT_PRICE, TimeStamp ORDER BY TimeStamp;
+    """)
+    # Deleting the original table
+    cur.execute("DELETE FROM oi_chain;")
+    # Inserting the content from the new temp table into oi_chain table
+    cur.execute("""
+        INSERT INTO oi_chain (CALL_OI, PUT_OI, TotalChinCallOI, TotalChinPutOI,
+                              oi_difference, Call_Put_Ratio, TotalCallVol, TotalPutVol,
+                              SPOT_PRICE, TimeStamp)
+        SELECT CALL_OI, PUT_OI, TotalChinCallOI, TotalChinPutOI,
+               oi_difference, Call_Put_Ratio, TotalCallVol, TotalPutVol,
+               SPOT_PRICE, TimeStamp
+        FROM oi_chain_temp;
+    """)
+    # Deleting the oi_chain_temp table
+    cur.execute("DROP TABLE oi_chain_temp;")
+
+    # Commit the changes to the database
+    conn.commit()
+
+    # Close the database connection
+    conn.close()
