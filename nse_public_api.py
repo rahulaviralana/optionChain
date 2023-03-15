@@ -47,5 +47,3 @@ def get_data(symbol='NIFTY'):
     except (SystemExit, AssertionError, MemoryError, KeyboardInterrupt, Exception) as e:
         print('There was an error fetching data connecting to NSE India ', e)
         return e
-
-# print(get_data('BANKNIFTY'))
