@@ -1,80 +1,83 @@
+import numpy as np
 import pandas as pd
+import logging
 import nse_public_api
 
+
+logging.basicConfig(level=logging.INFO)
 global timestamp
 
-
-def __convert_dataframe__(raw_json_data):
+def convert_dataframe(raw_json_data):
     """
-    This function will convert the supplied data to Pandas Data Frame
-    :return: This
+    Convert the supplied data to Pandas DataFrame.
     """
     try:
-        global timestamp
         timestamp = raw_json_data['records']['timestamp']
         rawdata = pd.DataFrame(raw_json_data)
         rawop = pd.DataFrame(rawdata['filtered']['data']).fillna(0)
         return rawop
     except Exception as e:
-        return e
+        logging.error(f"Error occurred in convert_dataframe: {e}")
+        raise e
 
 
-def __dataframe__(rawop):
+def process_dataframe(rawop):
+    """
+    This function processes the Pandas DataFrame to extract relevant data
+    :param rawop: Pandas DataFrame
+    :return: Processed Pandas DataFrame
+    """
     try:
         data = []
-        for i in range(0, len(rawop)):
-            calloi = callcoi = cltp = callvol = putoi = putcoi = pltp = putvol = ulatp = 0
+        for i in range(len(rawop)):
+            call_oi, call_coi, call_ltp, call_vol, put_oi, put_coi, put_ltp, put_vol, spot_price = [0] * 9
             stp = rawop['strikePrice'][i]
-            if rawop['CE'][i] == 0:
-                calloi = callcoi = 0
-            else:
-                calloi = rawop['CE'][i]['openInterest']
-                callcoi = rawop['CE'][i]['changeinOpenInterest']
-                cltp = rawop['CE'][i]['lastPrice']
-                callvol = rawop['CE'][i]['totalTradedVolume']
-                ulatp = rawop['CE'][i]['underlyingValue']
+            if rawop['CE'][i] != 0:
+                call_oi = rawop['CE'][i]['openInterest']
+                call_coi = rawop['CE'][i]['changeinOpenInterest']
+                call_ltp = rawop['CE'][i]['lastPrice']
+                call_vol = rawop['CE'][i]['totalTradedVolume']
+                spot_price = rawop['CE'][i]['underlyingValue']
 
-            if rawop['PE'][i] == 0:
-                putoi = putcoi = 0
-            else:
-                putoi = rawop['PE'][i]['openInterest']
-                putcoi = rawop['PE'][i]['changeinOpenInterest']
-                pltp = rawop['PE'][i]['lastPrice']
-                putvol = rawop['PE'][i]['totalTradedVolume']
+            if rawop['PE'][i] != 0:
+                put_oi = rawop['PE'][i]['openInterest']
+                put_coi = rawop['PE'][i]['changeinOpenInterest']
+                put_ltp = rawop['PE'][i]['lastPrice']
+                put_vol = rawop['PE'][i]['totalTradedVolume']
+                if spot_price == 0:
+                    spot_price = rawop['PE'][i]['underlyingValue']
 
-            opdata = {'CALL_OI': calloi, 'CALL_CHNG_OI': callcoi, 'CALL_LTP': cltp, 'CALL_VOLUME': callvol,
-                      'STRIKE_PRICE': stp, 'CURRENT_SPOT_PRICE': ulatp, 'PUT_OI': putoi, 'PUT_CHNG_OI': putcoi,
-                      'PUT_LTP': pltp, 'PUT_VOLUME': putvol, }
-
+            opdata = {'CALL_OI': call_oi, 'CALL_CHNG_OI': call_coi, 'CALL_LTP': call_ltp, 'CALL_VOLUME': call_vol,
+                      'STRIKE_PRICE': stp, 'CURRENT_SPOT_PRICE': spot_price, 'PUT_OI': put_oi, 'PUT_CHNG_OI': put_coi,
+                      'PUT_LTP': put_ltp, 'PUT_VOLUME': put_vol, }
             data.append(opdata)
 
         optionchain = pd.DataFrame(data)
         return optionchain
-    except (SystemExit, AssertionError, KeyError, MemoryError, KeyboardInterrupt, Exception) as e:
-        print('There was an exception in __dataframe__ ')
-        return e
-    except:
-        return
+    except Exception as e:
+        logging.exception(f'Error occurred in process_dataframe: {e}')
+        raise
 
 
-def __calculate_OI__(symbol='NIFTY'):
+def calculate_OI(symbol='NIFTY'):
     try:
-        rawop = __convert_dataframe__(nse_public_api.get_data(symbol))
-        optionchain = __dataframe__(rawop)
+        rawop = convert_dataframe(nse_public_api.get_data(symbol))
+        optionchain = process_dataframe(rawop)
+
         # Compute Call OI
-        TotalCallOI = optionchain['CALL_OI'].sum()
+        TotalCallOI = np.sum(optionchain['CALL_OI'])
         # Compute Put OI
-        TotalPutOI = optionchain['PUT_OI'].sum()
+        TotalPutOI = np.sum(optionchain['PUT_OI'])
         # Compute Call Change OI
-        TotalCallChOI = optionchain['CALL_CHNG_OI'].sum()
-        # Compute Put OI
-        TotalPutChOI = optionchain['PUT_CHNG_OI'].sum()
+        TotalCallChOI = np.sum(optionchain['CALL_CHNG_OI'])
+        # Compute Put Change OI
+        TotalPutChOI = np.sum(optionchain['PUT_CHNG_OI'])
         # Compute Call Volume
-        TotalCallVol = optionchain['CALL_VOLUME'].sum()
+        TotalCallVol = np.sum(optionchain['CALL_VOLUME'])
         # Compute Put Volume
-        TotalPutVol = optionchain['PUT_VOLUME'].sum()
+        TotalPutVol = np.sum(optionchain['PUT_VOLUME'])
         # Compute Current Spot Price
-        Totalulatp = optionchain['CURRENT_SPOT_PRICE'].sum()
+        Totalulatp = np.sum(optionchain['CURRENT_SPOT_PRICE'])
         # Average Spot Price
         avgc = len(optionchain['CURRENT_SPOT_PRICE'])
         # Call Put ratio
@@ -83,11 +86,17 @@ def __calculate_OI__(symbol='NIFTY'):
         else:
             call_put_ratio = 0
 
-        return (
-                f'CALL_OI {TotalCallOI} PUT_OI {TotalPutOI} TotalChinCallOI {TotalCallChOI} '
+        message = (f'CALL_OI {TotalCallOI} PUT_OI {TotalPutOI} TotalChinCallOI {TotalCallChOI} '
                 f'TotalChinPutOI {TotalPutChOI} oi_difference {TotalCallOI - TotalPutOI} '
                 f'Call_Put_Ratio {call_put_ratio} TotalCallVol {TotalCallVol} TotalPutVol {TotalPutVol}'
-                f' SPOT_PRICE {Totalulatp / avgc} TimeStamp {timestamp}')
-    except (SystemExit, AssertionError, KeyError, MemoryError, KeyboardInterrupt, TypeError, Exception) as e:
-        print('There was an error in __calculate_OI__ ')
-        return e
+                f' SPOT_PRICE {Totalulatp / avgc}')
+
+        logging.info(message)
+
+        return message
+    except (SystemExit, AssertionError, KeyError, MemoryError, KeyboardInterrupt, TypeError) as e:
+        logging.exception('An error occurred in calculate_OI')
+        raise e
+    except Exception as e:
+        logging.exception('An unknown error occurred in calculate_OI')
+        raise e
