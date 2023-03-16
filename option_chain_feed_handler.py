@@ -23,7 +23,7 @@ def main():
     args = parser.parse_args()
     symbol = args.ticker
 
-    db_file = f"C:\\Users\\admin\\projects\\optionChain\\{symbol}-{datetime.today().strftime('%Y-%m-%d-%H%M')}.db"
+    db_file = f"{symbol}-{datetime.today().strftime('%Y-%m-%d-%H%M')}.db"
 
     with sqlite_functions.create_db(db_file) as db:
         sqlite_functions.create_table(db, 'oi_chain', '''CREATE TABLE oi_chain (CALL_OI bigint,
