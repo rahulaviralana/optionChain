@@ -21,6 +21,7 @@ def main():
 
     # Get the current time in India
     current_time = datetime.datetime.now(tz).time()
+    today = datetime.datetime.now(tz).date()
 
     parser = argparse.ArgumentParser(description='This is can we used to record to NSE India options chan data ')
     parser.add_argument("-ticker", "-t",
@@ -31,7 +32,7 @@ def main():
     symbol = args.ticker
 
     output_dict1 = {}
-    if datetime.time(9, 15) <= current_time <= datetime.time(15, 30):
+    if datetime.time(9, 15) <= current_time <= datetime.time(20, 30):
         db_file = f"{symbol}-{datetime.datetime.today().strftime('%Y-%m-%d-%H%M')}.db"
 
         with sqlite_functions.create_db(db_file) as db:
@@ -60,13 +61,20 @@ def main():
                     else:
                         output_dict[word_list[i]] = word_list[i + 1]
 
-                if output_dict != output_dict1:
-                    sqlite_functions.sql_insert(db, 'oi_chain', output_dict)
-                    logging.info(f"Inserting {output_dict}")
-                    output_dict1 = output_dict
-                    logging.info(f"Inserted new record for {symbol}")
-                else:
-                    logging.info(f"Skipping duplicate record for {symbol}")
+                # parse the timestamp from the dictionary
+                timestamp_str = output_dict['TimeStamp']
+                timestamp = datetime.datetime.strptime(timestamp_str, '%d-%b-%Y %H:%M:%S')
+
+                # convert the timestamp to the timezone
+                timestamp = timestamp.replace(tzinfo=tz)
+                if timestamp.date() == today:
+                    if output_dict != output_dict1:
+                        sqlite_functions.sql_insert(db, 'oi_chain', output_dict)
+                        logging.info(f"Inserting {output_dict}")
+                        output_dict1 = output_dict
+                        logging.info(f"Inserted new record for {symbol}")
+                    else:
+                        logging.info(f"Skipping duplicate record for {symbol}")
 
                 time.sleep(25)  # NSE only publish data every 30 seconds
 
