@@ -47,6 +47,9 @@ def get_data(symbol='NIFTY'):
         if response.status_code == 401:
             cookies = set_cookie()
             response = sess.get(URL_OP_CHAIN_SYMBOL+symbol, headers=HEADERS, cookies=cookies)
+        if response.status_code == 404:
+            logger.error('No data from NSE. Got 404!')
+            pass
         if response.status_code == 200:
             return response.json()
 

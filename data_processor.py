@@ -5,17 +5,20 @@ import nse_public_api
 
 
 logging.basicConfig(level=logging.INFO)
-global timestamp
 
 def convert_dataframe(raw_json_data):
     """
     Convert the supplied data to Pandas DataFrame.
     """
     try:
+        global timestamp
         timestamp = raw_json_data['records']['timestamp']
         rawdata = pd.DataFrame(raw_json_data)
         rawop = pd.DataFrame(rawdata['filtered']['data']).fillna(0)
         return rawop
+    except KeyError as e:
+        logging.error(f"No data from NSE : {e}")
+        raise e
     except Exception as e:
         logging.error(f"Error occurred in convert_dataframe: {e}")
         raise e
@@ -89,7 +92,7 @@ def calculate_OI(symbol='NIFTY'):
         message = (f'CALL_OI {TotalCallOI} PUT_OI {TotalPutOI} TotalChinCallOI {TotalCallChOI} '
                 f'TotalChinPutOI {TotalPutChOI} oi_difference {TotalCallOI - TotalPutOI} '
                 f'Call_Put_Ratio {call_put_ratio} TotalCallVol {TotalCallVol} TotalPutVol {TotalPutVol}'
-                f' SPOT_PRICE {Totalulatp / avgc}')
+                f' SPOT_PRICE {Totalulatp / avgc} TimeStamp {timestamp}')
 
         logging.info(message)
 
