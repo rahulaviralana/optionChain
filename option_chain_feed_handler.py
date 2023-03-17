@@ -32,7 +32,7 @@ def main():
     symbol = args.ticker
 
     output_dict1 = {}
-    if datetime.time(9, 15) <= current_time <= datetime.time(20, 30):
+    if datetime.time(9, 15) <= current_time <= datetime.time(15, 30):
         db_file = f"{symbol}-{datetime.datetime.today().strftime('%Y-%m-%d-%H%M')}.db"
 
         with sqlite_functions.create_db(db_file) as db:
