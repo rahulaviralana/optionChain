@@ -78,6 +78,12 @@ def main():
 
                 time.sleep(25)  # NSE only publish data every 30 seconds
 
+                now = datetime.datetime.now(tz)
+                end_time = datetime.datetime(now.year, now.month, now.day, 15, 35, 0, tzinfo=now.tzinfo).time()
+
+                if now.time() >= end_time:
+                    break
+
             except KeyboardInterrupt:
                 print('Keyboard Interrupted')
             except Exception as e:
