@@ -82,6 +82,7 @@ def main():
                 end_time = datetime.datetime(now.year, now.month, now.day, 15, 35, 0, tzinfo=now.tzinfo).time()
 
                 if now.time() >= end_time:
+                    logging.info("Market Closed")
                     break
 
             except KeyboardInterrupt:
