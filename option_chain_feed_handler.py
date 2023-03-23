@@ -1,3 +1,4 @@
+import os
 import time
 import argparse
 import datetime
@@ -32,8 +33,9 @@ def main():
     symbol = args.ticker
 
     output_dict1 = {}
-    if datetime.time(9, 15) <= current_time <= datetime.time(15, 30):
-        db_file = f"{symbol}-{datetime.datetime.today().strftime('%Y-%m-%d-%H%M')}.db"
+    if datetime.time(9, 10) <= current_time <= datetime.time(15, 30):
+        db_file = os.path.join("~/optionchain/data/", f"{symbol}-"
+                                                          f"{datetime.datetime.today().strftime('%Y-%m-%d-%H%M')}.db")
 
         with sqlite_functions.create_db(db_file) as db:
             sqlite_functions.create_table(db, 'oi_chain', '''CREATE TABLE oi_chain (CALL_OI bigint,
