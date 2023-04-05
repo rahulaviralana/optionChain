@@ -59,3 +59,19 @@ def sql_insert(con: sqlite3.Connection, table: str, data: Dict[str, str]) -> Non
     except sqlite3.Error as e:
         logging.error(f"Error inserting data into {table}: {e}")
         raise
+
+
+def round_off(con: sqlite3.Connection, table: str, columns: list[str]) -> None:
+    try:
+        cursor = con.cursor()
+        query = f"UPDATE {table} SET "
+        for column in columns:
+            query += f"{column} = ROUND({column}, 2),"
+        query = query[:-1] + ";"
+        cursor.execute(query)
+        con.commit()
+        logging.info(f"Columns rounded off successfully.")
+    except sqlite3.Error as e:
+        logging.error(f"Columns couldn't be rounded off: {e}")
+        raise
+

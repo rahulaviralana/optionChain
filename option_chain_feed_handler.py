@@ -33,8 +33,8 @@ def main():
     symbol = args.ticker
 
     output_dict1 = {}
-    if datetime.time(9, 10) <= current_time <= datetime.time(15, 30):
-        db_file = os.path.join("~/optionchain/data/", f"{symbol}-"
+    if datetime.time(9, 10) <= current_time <= datetime.time(19, 30):
+        db_file = os.path.join("C:\\Users\\admin\\projects\\optionChain", f"{symbol}-"
                                                           f"{datetime.datetime.today().strftime('%Y-%m-%d-%H%M')}.db")
 
         with sqlite_functions.create_db(db_file) as db:
@@ -73,8 +73,10 @@ def main():
                     if output_dict != output_dict1:
                         sqlite_functions.sql_insert(db, 'oi_chain', output_dict)
                         logging.info(f"Inserting {output_dict}")
+                        sqlite_functions.round_off(db, 'oi_chain', ['Call_Put_Ratio', 'SPOT_PRICE'])
                         output_dict1 = output_dict
                         logging.info(f"Inserted new record for {symbol}")
+
                     else:
                         logging.info(f"Skipping duplicate record for {symbol}")
 
