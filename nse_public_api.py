@@ -1,3 +1,4 @@
+import logging
 import requests
 
 
@@ -6,13 +7,17 @@ This module is for all interactions with NSE India public API
 """
 
 # Global variables defined
-main_url = 'https://www.nseindia.com/'
-url_op_chain_symbol = 'https://www.nseindia.com/api/option-chain-indices?symbol='
-headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)'
-                         ' Chrome/80.0.3987.149 Safari/537.36', 'accept-language': 'en,gu;q=0.9,hi;q=0.8',
-           'accept-encoding': 'gzip, deflate, br'}
+MAIN_URL = 'https://www.nseindia.com/'
+URL_OP_CHAIN_SYMBOL = 'https://www.nseindia.com/api/option-chain-indices?symbol='
+HEADERS = {
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)'
+                  ' Chrome/80.0.3987.149 Safari/537.36',
+    'accept-language': 'en,gu;q=0.9,hi;q=0.8',
+    'accept-encoding': 'gzip, deflate, br'
+}
+
+logger = logging.getLogger(__name__)
 sess = requests.Session()
-cookies = dict()
 
 
 def set_cookie():
@@ -21,12 +26,13 @@ def set_cookie():
     :return: None
     """
     try:
-        request = sess.get(main_url, headers=headers, timeout=30)
+        request = sess.get(MAIN_URL, headers=HEADERS, timeout=30)
         cookies = dict(request.cookies)
+        return cookies
 
-    except (SystemExit, AssertionError, MemoryError, KeyboardInterrupt, Exception) as e:
-        print('There was an error connecting to NSE India ', e)
-        return e
+    except (requests.exceptions.RequestException, Exception) as e:
+        logger.error('Error connecting to NSE India: %s', e)
+        raise
 
 
 def get_data(symbol='NIFTY'):
@@ -36,16 +42,20 @@ def get_data(symbol='NIFTY'):
     :return:
     """
     try:
-        set_cookie()
-        response = sess.get(url_op_chain_symbol+symbol, headers=headers, cookies=cookies)
+        cookies = set_cookie()
+        response = sess.get(URL_OP_CHAIN_SYMBOL+symbol, headers=HEADERS, cookies=cookies)
         if response.status_code == 401:
-            set_cookie()
-            response = sess.get(url_op_chain_symbol+symbol, headers=headers, cookies=cookies)
+            cookies = set_cookie()
+            response = sess.get(URL_OP_CHAIN_SYMBOL+symbol, headers=HEADERS, cookies=cookies)
+        if response.status_code == 404:
+            logger.error('No data from NSE. Got 404!')
+            pass
         if response.status_code == 200:
             return response.json()
 
-    except (SystemExit, AssertionError, MemoryError, KeyboardInterrupt, Exception) as e:
-        print('There was an error fetching data connecting to NSE India ', e)
-        return e
+        logger.error('Error fetching data from NSE India: %s', response.text)
+        response.raise_for_status()
 
-# print(get_data('BANKNIFTY'))
+    except (requests.exceptions.RequestException, Exception) as e:
+        logger.error('Error fetching data from NSE India: %s', e)
+        raise
